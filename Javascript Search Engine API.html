@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Javascript Weather Search Engine</title>
+
+    <link rel="stylesheet" href="Javascript Weather App Project.css">
+
+    <script rel="stylesheet" href="Javascript Weather App Project.js" type="text/Javascript"></script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+</head>
+<body>
+    <div>
+
+        <!-- Div containing date and time -->
+        <div class="container-fluid">
+            <div class="sub-tile" id="date-time">
+                <h3 id="sub-heading">Today is</h3>
+                <h1 id="date"></h1>
+                <h2 id="time"></h2>
+            </div>
+        </div>
+
+        <!-- Form containing search input and API output -->
+        
+        <div class="row div-grid">
+
+            <div class="col-lg-6 tile">
+                <div class="sub-tile">
+                    <form id="search-form">
+                    <input type="search" id="city-input" placeholder="Search for a city..." name="city-input" autocomplete="off" />
+                    <br />
+                    <input type="submit"  id="city-submit" value="Search" />
+                    <br />
+                    </form>
+                    <input type="submit" id="my-location" value="My Location"> 
+                </div>
+            </div>
+
+            <div class="col-lg-6 tile">
+                <div class="sub-tile" id="city-information">
+                    <h1 id="city-name">Search for a city...</h1>
+                    <h2 id="city-temperature"></h2>
+                    <p id="city-minmax">Low <span id="min-temp"></span> / High <span id="max-temp"></span></p>
+                    <p id="unit-conversion"><a class="active" href="#" id="celsius-link">°C</a> / <a href="#" id="fahrenheit-link">°F</a></p>
+                </div>    
+            </div>
+
+        </div>
+        
+        <!-- Section containing extra forecast information -->
+
+        <div class="row div-grid">
+
+            <div class="col-lg-3 tile bg1">       
+                <div class="sub-tile">
+                    <h2>Wind</h2>
+                    <p id="wind"></p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 tile bg2">
+                <div class="sub-tile">
+                    <h2>Humidity</h2>
+                    <p id="humidity"></p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 tile bg3">
+                <div class="sub-tile">
+                    <h2>Cloud</h2>
+                    <p id="cloud"></p>
+                </div>
+            </div>
+
+            <div class="col-lg-3 tile bg4">
+                <div class="sub-tile">
+                    <h2>MCT / ECT</h2>
+                    <p id="sunrise"></p><p id="sunset"></p>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+<script>
+
+// Date and time
+
+    let now = new Date();
+
+    let currentDate = document.querySelector("#date");
+    let date = now.getDate();
+    let year = now.getFullYear();
+
+    let dayName = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    let day = dayName[now.getDay()];
+
+    let monthName = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+    let month = monthName[now.getMonth()];
+
+    let currentTime = document.querySelector("#time");
+    let hour = now.getHours();
+    if (hour < 10) {
+        hour = `0${hour}`;
+    }
+    let minute = now.getMinutes();
+    if (minute < 10) {
+        minute = `0${minute}`;
+    }
+
+    currentTime.innerHTML = `${hour}:${minute} GMT`;
+
+    currentDate.innerHTML = `${day} ${date} ${month}, ${year}`
+
+
+
+// Weather
+
+    function displayWeatherElements(response) {
+        let cityName = response.data.name;
+        let temperature = Math.round(response.data.main.temp);
+        let minTemp = Math.round(response.data.main.temp_min);
+        let maxTemp = Math.round(response.data.main.temp_max);
+        let humidity = Math.round(response.data.main.humidity);
+        let windSpeed = Math.round((response.data.wind.speed) / 1.852);
+        let windDirection = Math.round(response.data.wind.deg);
+        if (windDirection < 100) {
+            windDirection = `0${windDirection}`;
+        }
+        let cloudDescription = response.data.weather[0].description;
+        let MCT = (response.data.sys.sunrise);
+        let ECT = (response.data.sys.sunset);
+
+        celsiusTemperature = response.data.main.temp;
+
+
+        let currentCityName = document.querySelector("#city-name");
+        currentCityName.innerHTML = `${cityName}`;
+        let currentTemperature = document.querySelector("#city-temperature");
+        currentTemperature.innerHTML = `${temperature}°C`;
+        let currentMinTemp = document.querySelector("#min-temp");
+        currentMinTemp.innerHTML = `${minTemp}°C`;
+        let currentMaxTemp = document.querySelector("#max-temp");
+        currentMaxTemp.innerHTML = `${maxTemp}°C`;
+        let currentHumidity = document.querySelector("#humidity");
+        currentHumidity.innerHTML = `${humidity}%`;
+        let currentWind = document.querySelector("#wind");
+        currentWind.innerHTML = `${windDirection}° at ${windSpeed}kts`;
+        let currentCloud = document.querySelector("#cloud");
+        currentCloud.innerHTML = `${cloudDescription}`;
+        let currentSunrise = document.querySelector("#sunrise");
+        currentSunrise.innerHTML = (response.data.sys.sunrise) * 1000;
+        let currentSunset = document.querySelector("#sunset")
+        currentSunset.innerHTML = (response.data.sys.sunset) * 1000;
+    }
+
+   
+    
+    
+// Geolocation
+
+  
+
+// Build the API URL 
+
+    function search(city) {
+        let apiKey = "ea0b3a33d76a750ef3d5377013d597cb";
+        let units = "metric";
+        apiUrl = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=${units}&appid=${apiKey}`;
+
+        axios.get(apiUrl).then(displayWeatherElements);
+    }
+
+
+
+// City Search
+
+    function handleSubmit(event) {
+        event.preventDefault();
+
+        let cityInputElement = document.querySelector("#city-input");
+        search(cityInputElement.value);
+    }
+
+    let form = document.querySelector("#search-form");
+    form.addEventListener("submit", handleSubmit);
+
+// Temperature Conversion
+
+    function displayFahrenheitTemperature(event) {
+        event.preventDefault();
+
+        celsiusLink.classList.remove("active");
+        fahrenheitLink.classList.add("active");
+
+        let temperatureElement = document.querySelector("#city-temperature");
+        let fahrenheitTemperature = (celsiusTemperature * 9) / 5 + 32;    
+        temperatureElement.innerHTML = Math.round(`${fahrenheitTemperature}`) + "°F";
+
+// SORT THIS CODE OUT - Conversion of low/high temps not working.
+
+        let minTemp = Math.round(response.data.main.temp_min);
+        let maxTemp = Math.round(response.data.main.temp_max);
+
+        let minTempElement = document.querySelector("#min-temp");
+        let minFahrenheitTemp = (minTemp * 9) / 5 + 32;
+        minTempElement.innerHTML = `${minFahrenheitTemp}` + "°F";
+
+        let maxTempElement = document.querySelector("#max-temp");
+        let maxFahrenheitTemp = (maxTemp * 9) / 5 + 32;
+        maxTempElement.innerHTML = `${maxFahrenheitTemp}` + "°F";
+    }
+
+    function displayCelsiusTemperature(event) {
+        event.preventDefault();
+
+        celsiusLink.classList.add("active");
+        fahrenheitLink.classList.remove("active");
+
+        let temperatureElement = document.querySelector("#city-temperature");
+        temperatureElement.innerHTML = Math.round(`${celsiusTemperature}`) + "°C";
+    }
+
+    let fahrenheitLink = document.querySelector("#fahrenheit-link");
+    fahrenheitLink.addEventListener("click", displayFahrenheitTemperature);
+
+    let celsiusLink = document.querySelector("#celsius-link");
+    celsiusLink.addEventListener("click", displayCelsiusTemperature);
+
+    let celsiusTemperature = null;
+
+    search("London");
+
+
+
+</script>
+
+</body>
+</html>
